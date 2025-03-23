@@ -32,7 +32,12 @@ def test_cli_help(tmp_path: Path) -> None:
 
 
 def test_cli_simple(tmp_path: Path) -> None:
-    from h3a.config import DEFAULT_THREADS, Config
+    from h3a.config import (
+        DEFAULT_TAG_FORMAT,
+        DEFAULT_TAG_PATTERN,
+        DEFAULT_THREADS,
+        Config,
+    )
     from h3a.main import CliResult, main
 
     # -- Initialize test files --
@@ -57,8 +62,8 @@ def test_cli_simple(tmp_path: Path) -> None:
     assert cli_return_value.config == Config(
         include=["foo.txt"],
         exclude=[],
-        tag_format="_v%Y%m%d-%H%M%S",
-        tag_pattern=r"_v\d{8}-\d{6}",
+        tag_format=DEFAULT_TAG_FORMAT,
+        tag_pattern=DEFAULT_TAG_PATTERN,
         on_conflict="error",
         threads=DEFAULT_THREADS,
     )

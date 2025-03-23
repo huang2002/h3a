@@ -2,7 +2,13 @@ from pathlib import Path
 
 
 def test_config_simple(tmp_path: Path) -> None:
-    from h3a.config import DEFAULT_THREADS, Config, load_config
+    from h3a.config import (
+        DEFAULT_TAG_FORMAT,
+        DEFAULT_TAG_PATTERN,
+        DEFAULT_THREADS,
+        Config,
+        load_config,
+    )
 
     # -- Initialize test files --
     (tmp_path / "foo.txt").write_text("foo")
@@ -19,8 +25,8 @@ def test_config_simple(tmp_path: Path) -> None:
     assert config == Config(
         include=["foo.txt"],
         exclude=[],
-        tag_format="_v%Y%m%d-%H%M%S",
-        tag_pattern=r"_v\d{8}-\d{6}",
+        tag_format=DEFAULT_TAG_FORMAT,
+        tag_pattern=DEFAULT_TAG_PATTERN,
         on_conflict="error",
         threads=DEFAULT_THREADS,
     )

@@ -4,6 +4,8 @@ from typing import Final, Literal, TypedDict, cast
 
 import strictyaml as yaml
 
+DEFAULT_TAG_FORMAT = "_v%Y%m%d-%H%M%S"
+DEFAULT_TAG_PATTERN = r"_v\d{8}-\d{6}"
 DEFAULT_THREADS: Final = min(16, os.cpu_count() or 1)
 
 
@@ -24,8 +26,8 @@ config_schema = yaml.Map(
             yaml.Seq(yaml.Str()),
             yaml.EmptyList(),
         ),
-        yaml.Optional("tag_format", default="_v%Y%m%d-%H%M%S"): yaml.Str(),
-        yaml.Optional("tag_pattern", default=r"_v\d{8}-\d{6}"): yaml.Str(),
+        yaml.Optional("tag_format", default=DEFAULT_TAG_FORMAT): yaml.Str(),
+        yaml.Optional("tag_pattern", default=DEFAULT_TAG_PATTERN): yaml.Str(),
         yaml.Optional("on_conflict", default="error"): yaml.Enum(
             get_annotations(Config)["on_conflict"].__args__
         ),
