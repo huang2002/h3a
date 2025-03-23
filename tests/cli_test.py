@@ -1,7 +1,6 @@
 import re
 from contextlib import chdir
 from pathlib import Path
-from typing import cast
 
 from click.testing import CliRunner
 
@@ -33,8 +32,8 @@ def test_cli_help(tmp_path: Path) -> None:
 
 
 def test_cli_simple(tmp_path: Path) -> None:
-    from h3a.main import main
-    from h3a.plan import Plan, PlanItem
+    from h3a.config import DEFAULT_THREADS, Config
+    from h3a.main import CliResult, main
 
     # -- Initialize test files --
     (tmp_path / "foo.txt").write_text("foo")
@@ -51,11 +50,26 @@ def test_cli_simple(tmp_path: Path) -> None:
     # -- Assert cli result --
     assert cli_result.exception is None, cli_result.output
     assert cli_result.exit_code == 0, cli_result.output
-    plan = cast(Plan, cli_result.return_value)
-    assert isinstance(plan, list)
-    assert all(isinstance(plan_item, PlanItem) for plan_item in plan)
+    cli_return_value: object = cli_result.return_value
+    assert isinstance(cli_return_value, CliResult)
 
-    # -- Assert plan content --
+    # -- Assert config --
+    assert cli_return_value.config == Config(
+        include=["foo.txt"],
+        exclude=[],
+        tag_format="_v%Y%m%d-%H%M%S",
+        tag_pattern=r"_v\d{8}-\d{6}",
+        on_conflict="error",
+        threads=DEFAULT_THREADS,
+    )
+
+    # -- Assert context --
+    context = cli_return_value.context
+    assert context.verbose == False
+    assert context.threads == DEFAULT_THREADS
+
+    # -- Assert plan --
+    plan = cli_return_value.plan
     assert len(plan) == 1, plan
     assert plan[0].id == 1
     assert isinstance(plan[0].src, Path)
@@ -65,7 +79,7 @@ def test_cli_simple(tmp_path: Path) -> None:
     assert re.fullmatch(r"foo_v\d{8}-\d{6}.txt", plan[0].dest.name)
     assert not plan[0].overwrite_flag
 
-    # -- Assert plan execution --
+    # -- Assert execution --
     assert set(file_path.name for file_path in tmp_path.iterdir()) == {
         "foo.txt",
         "bar.txt",

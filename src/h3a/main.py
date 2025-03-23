@@ -1,15 +1,22 @@
 import logging
 from pathlib import Path
 from threading import RLock
+from typing import NamedTuple
 
 import click
 
-from .config import load_config
+from .config import Config, load_config
 from .context import Context
 from .execute import execute_plan
 from .plan import Plan, generate_plan
 
 logger = logging.getLogger(__name__)
+
+
+class CliResult(NamedTuple):
+    config: Config
+    context: Context
+    plan: Plan
 
 
 @click.command()
@@ -61,7 +68,7 @@ def main(
     threads: int | None,
     dry_run: bool,
     verbose: bool,
-) -> Plan:
+) -> CliResult:
     """A simple script for file archiving."""
 
     # -- Setup logging --
@@ -100,4 +107,8 @@ def main(
         # -- Execute plan --
         execute_plan(plan, context=context)
 
-    return plan
+    return CliResult(
+        config=config,
+        context=context,
+        plan=plan,
+    )
