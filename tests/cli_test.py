@@ -6,7 +6,33 @@ from typing import cast
 from click.testing import CliRunner
 
 
-def test_cli(tmp_path: Path) -> None:
+def test_cli_help(tmp_path: Path) -> None:
+    from h3a.main import main
+
+    cli_runner = CliRunner()
+    with chdir(tmp_path):
+        cli_result = cli_runner.invoke(main, ["--help"], prog_name="h3a")
+
+    assert cli_result.exception is None, cli_result.output
+    assert cli_result.exit_code == 0, cli_result.output
+    assert cli_result.output == (
+        "Usage: h3a [OPTIONS]\n"
+        "\n"
+        "  A simple script for file archiving.\n"
+        "\n"
+        "Options:\n"
+        "  -c, --config FILE            Path to config file.  [default: h3a.yaml]\n"
+        "  -e, --encoding TEXT          Encoding of the config file.  [default: utf-8]\n"
+        "  -y, --skip-confirm           Skip confirmation prompt.\n"
+        "  -t, --threads INTEGER RANGE  Number of threads to use.  [x>=1]\n"
+        "  -d, --dry-run                Print plan and exit.\n"
+        "  --verbose                    Enable debug logging.\n"
+        "  --version                    Show the version and exit.\n"
+        "  --help                       Show this message and exit.\n"
+    )
+
+
+def test_cli_simple(tmp_path: Path) -> None:
     from h3a.main import main
     from h3a.plan import Plan, PlanItem
 
