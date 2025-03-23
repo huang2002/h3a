@@ -1,0 +1,46 @@
+default_install_hook_types:
+  - pre-commit
+  - post-checkout
+  - post-merge
+  - post-rewrite
+
+repos:
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-illegal-windows-names
+      - id: check-merge-conflict
+      - id: check-shebang-scripts-are-executable
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-yaml
+      - id: debug-statements
+      - id: destroyed-symlinks
+      - id: name-tests-test
+      - id: trailing-whitespace
+
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version.
+    rev: 0.6.5
+    hooks:
+      # Update the uv lockfile.
+      - id: uv-lock
+        stages: [ "pre-commit" ]
+      # Synchronize dependencies.
+      - id: uv-sync
+        stages: [ "post-checkout", "post-merge", "post-rewrite" ]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.9.9
+    hooks:
+      # Run the linter.
+      - id: ruff
+        args: [ "--fix" ]
+        stages: [ "pre-commit" ]
+      # Run the formatter.
+      - id: ruff-format
+        stages: [ "pre-commit" ]
