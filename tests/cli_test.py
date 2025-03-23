@@ -43,10 +43,10 @@ def test_cli_simple(tmp_path: Path) -> None:
     (tmp_path / "baz" / "blah.txt").write_text("blah")
     (tmp_path / "h3a.yaml").write_text("include:\n  - foo.txt\n")
 
-    # -- Execute h3a --
+    # -- Execute cli --
     cli_runner = CliRunner()
     with chdir(tmp_path):
-        cli_result = cli_runner.invoke(main, ["-y"], standalone_mode=False)
+        cli_result = cli_runner.invoke(main, input="y\n", standalone_mode=False)
 
     # -- Assert cli result --
     assert cli_result.exception is None, cli_result.output
