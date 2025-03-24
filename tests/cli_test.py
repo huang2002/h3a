@@ -1,20 +1,14 @@
 import re
 from contextlib import chdir
 from pathlib import Path
+from subprocess import run
 
 from click.testing import CliRunner
 
 
 def test_cli_help(tmp_path: Path) -> None:
-    from h3a.cli import main
-
-    cli_runner = CliRunner()
-    with chdir(tmp_path):
-        cli_result = cli_runner.invoke(main, ["--help"], prog_name="h3a")
-
-    assert cli_result.exception is None, cli_result.output
-    assert cli_result.exit_code == 0, cli_result.output
-    assert cli_result.output == (
+    process = run(["h3a", "--help"], check=True, capture_output=True, text=True)
+    assert process.stdout == (
         "Usage: h3a [OPTIONS]\n"
         "\n"
         "  A simple script for file archiving.\n"
