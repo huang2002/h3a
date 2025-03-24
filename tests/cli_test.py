@@ -6,7 +6,7 @@ from click.testing import CliRunner
 
 
 def test_cli_help(tmp_path: Path) -> None:
-    from h3a.main import main
+    from h3a.cli import main
 
     cli_runner = CliRunner()
     with chdir(tmp_path):
@@ -32,13 +32,13 @@ def test_cli_help(tmp_path: Path) -> None:
 
 
 def test_cli_simple(tmp_path: Path) -> None:
+    from h3a.cli import CliResult, main
     from h3a.config import (
         DEFAULT_TAG_FORMAT,
         DEFAULT_TAG_PATTERN,
         DEFAULT_THREADS,
         Config,
     )
-    from h3a.main import CliResult, main
 
     # -- Initialize test files --
     (tmp_path / "foo.txt").write_text("foo")
