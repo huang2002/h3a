@@ -2,6 +2,8 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from pytest import raises
+
 if TYPE_CHECKING:
     from h3a.context import Context  # pragma: no cover
 
@@ -32,6 +34,88 @@ def test_plan_simple(tmp_path: Path, test_context: "Context") -> None:
     assert plan[0].dest.parent == tmp_path
     assert re.fullmatch(r"foo_v\d{8}-\d{6}.txt", plan[0].dest.name)
     assert not plan[0].overwrite_flag
+
+
+def test_plan_tag_unmatch(tmp_path: Path, test_context: "Context") -> None:
+    from h3a.config import load_config
+    from h3a.plan import generate_plan
+
+    # -- Initialize test files --
+    (tmp_path / "foo.txt").write_text("foo")
+    (tmp_path / "foo_backup.txt").write_text("foo")
+    (tmp_path / "h3a.yaml").write_text(
+        "include:\n  - foo.txt\ntag_format: .backup\ntag_pattern: _backup\n"
+    )
+
+    # -- Generate plan --
+    config = load_config(tmp_path / "h3a.yaml")
+    with raises(
+        RuntimeError,
+        match="Generated tag '.backup' is incompatible with tag pattern: '_backup'",
+    ):
+        _plan = generate_plan(config=config, root_dir=tmp_path, context=test_context)
+
+
+def test_plan_conflict_error(tmp_path: Path, test_context: "Context") -> None:
+    from h3a.config import load_config
+    from h3a.plan import generate_plan
+
+    # -- Initialize test files --
+    (tmp_path / "foo.txt").write_text("foo")
+    (tmp_path / "foo_backup.txt").write_text("foo")
+    (tmp_path / "h3a.yaml").write_text(
+        "include:\n  - foo.txt\ntag_format: _backup\ntag_pattern: _backup\n"
+    )
+
+    # -- Generate plan --
+    config = load_config(tmp_path / "h3a.yaml")
+    with raises(
+        RuntimeError, match=f"Destination file exists: {tmp_path / 'foo_backup.txt'}"
+    ):
+        _plan = generate_plan(config=config, root_dir=tmp_path, context=test_context)
+
+
+def test_plan_conflict_skip(tmp_path: Path, test_context: "Context") -> None:
+    from h3a.config import load_config
+    from h3a.plan import PlanItem, generate_plan
+
+    # -- Initialize test files --
+    (tmp_path / "foo.txt").write_text("foo")
+    (tmp_path / "foo_backup.txt").write_text("foo")
+    (tmp_path / "h3a.yaml").write_text(
+        "include:\n"
+        "  - foo.txt\n"
+        "tag_format: _backup\n"
+        "tag_pattern: _backup\n"
+        "on_conflict: skip\n"
+    )
+
+    # -- Generate plan --
+    config = load_config(tmp_path / "h3a.yaml")
+    plan = generate_plan(config=config, root_dir=tmp_path, context=test_context)
+    assert isinstance(plan, list)
+    assert all(isinstance(plan_item, PlanItem) for plan_item in plan)
+    assert len(plan) == 0
+
+
+def test_plan_overwriting_src(tmp_path: Path, test_context: "Context") -> None:
+    from h3a.config import load_config
+    from h3a.plan import generate_plan
+
+    # -- Initialize test files --
+    (tmp_path / "foo.txt").write_text("foo")
+    (tmp_path / "foo_backup.txt").write_text("foo")
+    (tmp_path / "h3a.yaml").write_text(
+        "include:\n  - foo.txt\ntag_format: .backup\ntag_pattern: _backup\n"
+    )
+
+    # -- Generate plan --
+    config = load_config(tmp_path / "h3a.yaml")
+    with raises(
+        RuntimeError,
+        match="Generated tag '.backup' is incompatible with tag pattern: '_backup'",
+    ):
+        _plan = generate_plan(config=config, root_dir=tmp_path, context=test_context)
 
 
 def test_plan_complex(tmp_path: Path, test_context: "Context") -> None:
