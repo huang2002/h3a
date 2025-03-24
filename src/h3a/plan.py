@@ -12,7 +12,7 @@ from .context import Context
 logger = getLogger(__name__)
 
 
-def collect_target_files(root_dir: Path, config: Config) -> set[Path]:
+def collect_source_files(root_dir: Path, config: Config) -> set[Path]:
     return set(
         (root_dir / path).absolute()
         for include_pattern in config["include"]
@@ -46,11 +46,11 @@ def generate_plan(*, config: Config, root_dir: Path, context: Context) -> Plan:
 
     tag_length = len(tag)
     plan: Plan = []
-    target_files = collect_target_files(root_dir, config)
-    conflict_paths = set[Path]()
+    src_paths = collect_source_files(root_dir, config)
+    overwriting_src_paths = set[Path]()
     skipped_paths = set[Path]()
 
-    for src_path in target_files:
+    for src_path in src_paths:
         if re.fullmatch(config["tag_pattern"], src_path.stem[-tag_length:]):
             skipped_paths.add(src_path)
             with context.log_lock:
@@ -61,8 +61,8 @@ def generate_plan(*, config: Config, root_dir: Path, context: Context) -> Plan:
 
         dest_path = src_path.with_stem(src_path.stem + tag)
         if dest_path.exists():
-            if dest_path in target_files:
-                conflict_paths.add(dest_path)
+            if dest_path in src_paths:
+                overwriting_src_paths.add(dest_path)
 
             match config["on_conflict"]:
                 case "error":
@@ -89,10 +89,12 @@ def generate_plan(*, config: Config, root_dir: Path, context: Context) -> Plan:
             )
         )
 
-    conflict_paths -= skipped_paths
-    if len(conflict_paths):
-        raise RuntimeError(
-            f"Detected destination file conflict(s): {', '.join(map(str, conflict_paths))}"
+    overwriting_src_paths -= skipped_paths
+    if len(overwriting_src_paths):
+        # This should never happen because source files conflicting with
+        # destination files should have tags matched and thus be skipped.
+        raise RuntimeError(  # pragma: no cover
+            f"Overwriting source file(s): {', '.join(map(str, overwriting_src_paths))}"
         )
 
     return plan
