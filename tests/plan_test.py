@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from h3a.context import Context
+    from h3a.context import Context  # pragma: no cover
 
 
 def test_plan_simple(tmp_path: Path, test_context: "Context") -> None:

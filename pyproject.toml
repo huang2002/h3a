@@ -16,7 +16,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-dev = ["ruff>=0.9.9"]
+dev = ["pytest-cov>=6.0.0", "ruff>=0.9.9"]
 
 [tool.pytest.ini_options]
 tmp_path_retention_policy = "failed"

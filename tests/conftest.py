@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from pytest import fixture
 
 if TYPE_CHECKING:
-    from h3a.context import Context
+    from h3a.context import Context  # pragma: no cover
 
 
 @fixture
