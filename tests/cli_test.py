@@ -6,7 +6,7 @@ from subprocess import run
 from click.testing import CliRunner
 
 
-def test_cli_help(tmp_path: Path) -> None:
+def test_cli_help() -> None:
     process = run(["h3a", "--help"], check=True, capture_output=True, text=True)
     assert process.stdout == (
         "Usage: h3a [OPTIONS]\n"
@@ -16,12 +16,31 @@ def test_cli_help(tmp_path: Path) -> None:
         "Options:\n"
         "  -c, --config FILE            Path to config file.  [default: h3a.yaml]\n"
         "  -e, --encoding TEXT          Encoding of the config file.  [default: utf-8]\n"
+        "  --help-config                Show config schema and exit.\n"
         "  -y, --skip-confirm           Skip confirmation prompt.\n"
         "  -t, --threads INTEGER RANGE  Number of threads to use.  [x>=1]\n"
         "  -d, --dry-run                Print plan and exit.\n"
         "  --verbose                    Enable debug logging.\n"
         "  --version                    Show the version and exit.\n"
         "  --help                       Show this message and exit.\n"
+    )
+
+
+def test_cli_help_config() -> None:
+    process = run(["h3a", "--help-config"], check=True, capture_output=True, text=True)
+    assert process.stdout == (
+        "include (list[str]):\n"
+        "    An array of glob patterns to include.\n"
+        "exclude (list[str], optional):\n"
+        "    An array of glob patterns to exclude. (default: [])\n"
+        "tag_format (str, optional):\n"
+        "    The strftime format of the dest tag. (default: '_v%Y%m%d-%H%M%S')\n"
+        "tag_pattern (str, optional):\n"
+        "    A regex pattern to match existing dest tags. (default: '_v\\\\d{8}-\\\\d{6}')\n"
+        "on_conflict (typing.Literal['error', 'skip', 'overwrite'], optional):\n"
+        "    The action of existing dest files. (default: 'error')\n"
+        "threads (int, optional):\n"
+        "    The number of maximum threads to use. (default: 16)\n"
     )
 
 

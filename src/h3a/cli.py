@@ -5,12 +5,19 @@ from typing import NamedTuple
 
 import click
 
-from .config import Config, load_config
+from .config import Config, format_config_help, load_config
 from .context import Context
 from .execute import execute_plan
 from .plan import Plan, generate_plan
 
 logger = logging.getLogger(__name__)
+
+
+def help_config(context: click.Context, param: click.Parameter, value: object) -> None:
+    if not value or context.resilient_parsing:
+        return
+    click.echo(format_config_help(), nl=False)
+    context.exit()
 
 
 class CliResult(NamedTuple):
@@ -36,6 +43,14 @@ class CliResult(NamedTuple):
     default="utf-8",
     help="Encoding of the config file.",
     show_default=True,
+)
+@click.option(
+    "--help-config",
+    is_flag=True,
+    is_eager=True,
+    expose_value=False,
+    callback=help_config,
+    help="Show config schema and exit.",
 )
 @click.option(
     "-y",
