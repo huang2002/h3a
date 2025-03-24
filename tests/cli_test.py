@@ -58,7 +58,7 @@ def test_cli_simple(tmp_path: Path) -> None:
     (tmp_path / "foo.txt").write_text("foo")
     (tmp_path / "bar.txt").write_text("bar")
     (tmp_path / "baz").mkdir()
-    (tmp_path / "baz" / "blah.txt").write_text("blah")
+    (tmp_path / "baz/blah.txt").write_text("blah")
     (tmp_path / "h3a.yaml").write_text("include:\n  - foo.txt\n")
 
     # -- Execute cli --
@@ -211,7 +211,7 @@ def test_cli_dry_run(tmp_path: Path) -> None:
     (tmp_path / "foo.txt").write_text("foo")
     (tmp_path / "bar.txt").write_text("bar")
     (tmp_path / "baz").mkdir()
-    (tmp_path / "baz" / "blah.txt").write_text("blah")
+    (tmp_path / "baz/blah.txt").write_text("blah")
     (tmp_path / "h3a.yaml").write_text("include:\n  - foo.txt\n")
 
     # -- Execute cli --
@@ -270,7 +270,7 @@ def test_cli_subprocess(tmp_path_factory: TempPathFactory) -> None:
     (file_dir / "foo.txt").write_text("foo")
     (file_dir / "bar.txt").write_text("bar")
     (file_dir / "baz").mkdir()
-    (file_dir / "baz" / "blah.txt").write_text("blah")
+    (file_dir / "baz/blah.txt").write_text("blah")
     (file_dir / "h3a.yaml").write_text("include:\n  - foo.txt\n")
     file_paths_before = set(
         path.relative_to(file_dir).as_posix() for path in file_dir.glob("**/*.*")

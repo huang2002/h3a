@@ -14,7 +14,7 @@ def test_plan_simple(tmp_path: Path, test_context: "Context") -> None:
     (tmp_path / "foo.txt").write_text("foo")
     (tmp_path / "foo_v20021011-123456.txt").write_text("foo")
     (tmp_path / "baz").mkdir()
-    (tmp_path / "baz" / "blah.txt").write_text("blah")
+    (tmp_path / "baz/blah.txt").write_text("blah")
     (tmp_path / "h3a.yaml").write_text("include:\n  - '*.txt'\n")
 
     # -- Generate plan --

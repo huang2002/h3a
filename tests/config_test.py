@@ -14,7 +14,7 @@ def test_config_simple(tmp_path: Path) -> None:
     (tmp_path / "foo.txt").write_text("foo")
     (tmp_path / "bar.txt").write_text("bar")
     (tmp_path / "baz").mkdir()
-    (tmp_path / "baz" / "blah.txt").write_text("blah")
+    (tmp_path / "baz/blah.txt").write_text("blah")
     (tmp_path / "h3a.yaml").write_text("include:\n  - foo.txt\n")
 
     # -- Load config --
@@ -39,7 +39,7 @@ def test_config_complex(tmp_path: Path) -> None:
     (tmp_path / "foo.txt").write_text("foo")
     (tmp_path / "bar.txt").write_text("bar")
     (tmp_path / "baz").mkdir()
-    (tmp_path / "baz" / "blah.txt").write_text("blah")
+    (tmp_path / "baz/blah.txt").write_text("blah")
     (tmp_path / "h3a.yaml").write_text(
         "include:\n"
         "  - foo.txt\n"
