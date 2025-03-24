@@ -111,16 +111,28 @@ def test_cli_simple(tmp_path: Path) -> None:
     assert plan[0].src.read_text() == plan[0].dest.read_text()
 
 
-def test_cli_verbose(tmp_path: Path) -> None:
+def test_cli_complex(tmp_path: Path) -> None:
     from h3a.cli import CliResult, main
-    from h3a.config import DEFAULT_TAG_FORMAT, DEFAULT_TAG_PATTERN, Config
+    from h3a.config import Config
+    from h3a.plan import PlanItem
 
     # -- Initialize test files --
     (tmp_path / "foo.txt").write_text("foo")
+    (tmp_path / "foo.backup.txt").write_text("foo")
     (tmp_path / "bar.txt").write_text("bar")
-    (tmp_path / "baz").mkdir()
-    (tmp_path / "baz" / "blah.txt").write_text("blah")
-    (tmp_path / "h3a.yaml").write_text("include:\n  - foo.txt\n")
+    (tmp_path / "baz.txt").write_text("bar")
+    (tmp_path / "blah").mkdir()
+    (tmp_path / "blah/blah.txt").write_text("blah")
+    (tmp_path / "h3a.yaml").write_text(
+        "include:\n"
+        "  - '*.txt'\n"
+        "exclude:\n"
+        "  - bar.txt\n"
+        "tag_format: .backup\n"
+        "tag_pattern: .backup\n"
+        "on_conflict: overwrite\n"
+        "threads: 2\n"
+    )
 
     # -- Execute cli --
     cli_runner = CliRunner()
@@ -137,11 +149,11 @@ def test_cli_verbose(tmp_path: Path) -> None:
 
     # -- Assert config --
     assert cli_return_value.config == Config(
-        include=["foo.txt"],
-        exclude=[],
-        tag_format=DEFAULT_TAG_FORMAT,
-        tag_pattern=DEFAULT_TAG_PATTERN,
-        on_conflict="error",
+        include=["*.txt"],
+        exclude=["bar.txt"],
+        tag_format=".backup",
+        tag_pattern=".backup",
+        on_conflict="overwrite",
         threads=1,
     )
 
@@ -152,26 +164,38 @@ def test_cli_verbose(tmp_path: Path) -> None:
 
     # -- Assert plan --
     plan = cli_return_value.plan
-    assert len(plan) == 1, plan
-    assert plan[0].id == 1
-    assert isinstance(plan[0].src, Path)
-    assert plan[0].src == (tmp_path / "foo.txt")
-    assert isinstance(plan[0].dest, Path)
-    assert plan[0].dest.parent == tmp_path
-    assert re.fullmatch(r"foo_v\d{8}-\d{6}.txt", plan[0].dest.name)
-    assert not plan[0].overwrite_flag
+    assert list(plan_item.id for plan_item in plan) == list(
+        i + 1 for i in range(len(plan))
+    )
+    assert set(plan_item._replace(id=-1) for plan_item in plan) == {
+        PlanItem(
+            id=-1,
+            src=(tmp_path / "foo.txt"),
+            dest=(tmp_path / "foo.backup.txt"),
+            overwrite_flag=True,
+        ),
+        PlanItem(
+            id=-1,
+            src=(tmp_path / "baz.txt"),
+            dest=(tmp_path / "baz.backup.txt"),
+            overwrite_flag=False,
+        ),
+    }
 
     # -- Assert execution --
     assert set(
         path.relative_to(tmp_path).as_posix() for path in tmp_path.glob("**/*.*")
     ) == {
         "foo.txt",
+        "foo.backup.txt",
         "bar.txt",
+        "baz.txt",
+        "baz.backup.txt",
         "h3a.yaml",
-        plan[0].dest.name,
-        "baz/blah.txt",
+        "blah/blah.txt",
     }
-    assert plan[0].src.read_text() == plan[0].dest.read_text()
+    for plan_item in plan:
+        assert plan_item.src.read_text() == plan_item.dest.read_text()
 
 
 def test_cli_dry_run(tmp_path: Path) -> None:
