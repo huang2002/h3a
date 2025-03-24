@@ -84,7 +84,7 @@ def test_cli_simple(tmp_path: Path) -> None:
 
     # -- Assert context --
     context = cli_return_value.context
-    assert context.verbose == False
+    assert not context.verbose
     assert context.threads == DEFAULT_THREADS
 
     # -- Assert plan --
@@ -109,6 +109,135 @@ def test_cli_simple(tmp_path: Path) -> None:
         "baz/blah.txt",
     }
     assert plan[0].src.read_text() == plan[0].dest.read_text()
+
+
+def test_cli_verbose(tmp_path: Path) -> None:
+    from h3a.cli import CliResult, main
+    from h3a.config import DEFAULT_TAG_FORMAT, DEFAULT_TAG_PATTERN, Config
+
+    # -- Initialize test files --
+    (tmp_path / "foo.txt").write_text("foo")
+    (tmp_path / "bar.txt").write_text("bar")
+    (tmp_path / "baz").mkdir()
+    (tmp_path / "baz" / "blah.txt").write_text("blah")
+    (tmp_path / "h3a.yaml").write_text("include:\n  - foo.txt\n")
+
+    # -- Execute cli --
+    cli_runner = CliRunner()
+    with chdir(tmp_path):
+        cli_result = cli_runner.invoke(
+            main, ["--verbose", "-t", "1"], input="y\n", standalone_mode=False
+        )
+
+    # -- Assert cli result --
+    assert cli_result.exception is None, cli_result.output
+    assert cli_result.exit_code == 0, cli_result.output
+    cli_return_value: object = cli_result.return_value
+    assert isinstance(cli_return_value, CliResult)
+
+    # -- Assert config --
+    assert cli_return_value.config == Config(
+        include=["foo.txt"],
+        exclude=[],
+        tag_format=DEFAULT_TAG_FORMAT,
+        tag_pattern=DEFAULT_TAG_PATTERN,
+        on_conflict="error",
+        threads=1,
+    )
+
+    # -- Assert context --
+    context = cli_return_value.context
+    assert context.verbose
+    assert context.threads == 1
+
+    # -- Assert plan --
+    plan = cli_return_value.plan
+    assert len(plan) == 1, plan
+    assert plan[0].id == 1
+    assert isinstance(plan[0].src, Path)
+    assert plan[0].src == (tmp_path / "foo.txt")
+    assert isinstance(plan[0].dest, Path)
+    assert plan[0].dest.parent == tmp_path
+    assert re.fullmatch(r"foo_v\d{8}-\d{6}.txt", plan[0].dest.name)
+    assert not plan[0].overwrite_flag
+
+    # -- Assert execution --
+    assert set(
+        path.relative_to(tmp_path).as_posix() for path in tmp_path.glob("**/*.*")
+    ) == {
+        "foo.txt",
+        "bar.txt",
+        "h3a.yaml",
+        plan[0].dest.name,
+        "baz/blah.txt",
+    }
+    assert plan[0].src.read_text() == plan[0].dest.read_text()
+
+
+def test_cli_dry_run(tmp_path: Path) -> None:
+    from h3a.cli import CliResult, main
+    from h3a.config import (
+        DEFAULT_TAG_FORMAT,
+        DEFAULT_TAG_PATTERN,
+        DEFAULT_THREADS,
+        Config,
+    )
+
+    # -- Initialize test files --
+    (tmp_path / "foo.txt").write_text("foo")
+    (tmp_path / "bar.txt").write_text("bar")
+    (tmp_path / "baz").mkdir()
+    (tmp_path / "baz" / "blah.txt").write_text("blah")
+    (tmp_path / "h3a.yaml").write_text("include:\n  - foo.txt\n")
+
+    # -- Execute cli --
+    cli_runner = CliRunner()
+    with chdir(tmp_path):
+        cli_result = cli_runner.invoke(
+            main, ["--dry-run"], input="y\n", standalone_mode=False
+        )
+
+    # -- Assert cli result --
+    assert cli_result.exception is None, cli_result.output
+    assert cli_result.exit_code == 0, cli_result.output
+    cli_return_value: object = cli_result.return_value
+    assert isinstance(cli_return_value, CliResult)
+
+    # -- Assert config --
+    assert cli_return_value.config == Config(
+        include=["foo.txt"],
+        exclude=[],
+        tag_format=DEFAULT_TAG_FORMAT,
+        tag_pattern=DEFAULT_TAG_PATTERN,
+        on_conflict="error",
+        threads=DEFAULT_THREADS,
+    )
+
+    # -- Assert context --
+    context = cli_return_value.context
+    assert not context.verbose
+    assert context.threads == DEFAULT_THREADS
+
+    # -- Assert plan --
+    plan = cli_return_value.plan
+    assert len(plan) == 1, plan
+    assert plan[0].id == 1
+    assert isinstance(plan[0].src, Path)
+    assert plan[0].src == (tmp_path / "foo.txt")
+    assert isinstance(plan[0].dest, Path)
+    assert plan[0].dest.parent == tmp_path
+    assert re.fullmatch(r"foo_v\d{8}-\d{6}.txt", plan[0].dest.name)
+    assert not plan[0].overwrite_flag
+
+    # -- Assert execution --
+    assert set(
+        path.relative_to(tmp_path).as_posix() for path in tmp_path.glob("**/*.*")
+    ) == {
+        "foo.txt",
+        "bar.txt",
+        "h3a.yaml",
+        "baz/blah.txt",
+    }
 
 
 def test_cli_subprocess(tmp_path_factory: TempPathFactory) -> None:
