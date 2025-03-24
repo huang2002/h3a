@@ -4,6 +4,7 @@ from pathlib import Path
 from subprocess import run
 
 from click.testing import CliRunner
+from pytest import TempPathFactory
 
 
 def test_cli_help() -> None:
@@ -109,3 +110,30 @@ def test_cli_simple(tmp_path: Path) -> None:
         "blah.txt"
     }
     assert plan[0].src.read_text() == plan[0].dest.read_text()
+
+
+def test_cli_subprocess(tmp_path_factory: TempPathFactory) -> None:
+    # -- Initialize test files --
+    file_dir = tmp_path_factory.mktemp("file_dir")
+    (file_dir / "foo.txt").write_text("foo")
+    (file_dir / "bar.txt").write_text("bar")
+    (file_dir / "baz").mkdir()
+    (file_dir / "baz" / "blah.txt").write_text("blah")
+    (file_dir / "h3a.yaml").write_text("include:\n  - foo.txt\n")
+    file_paths_before = set(file_path.name for file_path in file_dir.iterdir())
+
+    # -- Execute cli --
+    config_path = str((file_dir / "h3a.yaml").absolute())
+    with chdir(tmp_path_factory.mktemp("cwd")):
+        run(["h3a", "-yc", config_path], check=True)
+
+    # -- Assert execution --
+    file_paths_after = set(file_path.name for file_path in file_dir.iterdir())
+    assert len(file_paths_after) == len(file_paths_before) + 1
+    new_paths = file_paths_after - file_paths_before
+    assert len(new_paths) == 1
+    new_path = list(new_paths)[0]
+    assert re.fullmatch(r"foo_v\d{8}-\d{6}.txt", new_path)
+    assert set(file_path.name for file_path in (file_dir / "baz").iterdir()) == {
+        "blah.txt"
+    }
