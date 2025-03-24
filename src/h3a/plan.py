@@ -1,10 +1,10 @@
 import re
-from dataclasses import dataclass
 from fnmatch import fnmatch
 from glob import glob
 from logging import getLogger
 from pathlib import Path
 from time import strftime
+from typing import NamedTuple
 
 from .config import Config
 from .context import Context
@@ -26,8 +26,7 @@ def collect_target_files(root_dir: Path, config: Config) -> set[Path]:
     )
 
 
-@dataclass
-class PlanItem:
+class PlanItem(NamedTuple):
     id: int
     src: Path
     dest: Path
