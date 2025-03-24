@@ -99,15 +99,14 @@ def test_cli_simple(tmp_path: Path) -> None:
     assert not plan[0].overwrite_flag
 
     # -- Assert execution --
-    assert set(file_path.name for file_path in tmp_path.iterdir()) == {
+    assert set(
+        path.relative_to(tmp_path).as_posix() for path in tmp_path.glob("**/*.*")
+    ) == {
         "foo.txt",
         "bar.txt",
-        "baz",
         "h3a.yaml",
         plan[0].dest.name,
-    }
-    assert set(file_path.name for file_path in (tmp_path / "baz").iterdir()) == {
-        "blah.txt"
+        "baz/blah.txt",
     }
     assert plan[0].src.read_text() == plan[0].dest.read_text()
 
@@ -120,7 +119,9 @@ def test_cli_subprocess(tmp_path_factory: TempPathFactory) -> None:
     (file_dir / "baz").mkdir()
     (file_dir / "baz" / "blah.txt").write_text("blah")
     (file_dir / "h3a.yaml").write_text("include:\n  - foo.txt\n")
-    file_paths_before = set(file_path.name for file_path in file_dir.iterdir())
+    file_paths_before = set(
+        path.relative_to(file_dir).as_posix() for path in file_dir.glob("**/*.*")
+    )
 
     # -- Execute cli --
     config_path = str((file_dir / "h3a.yaml").absolute())
@@ -128,12 +129,11 @@ def test_cli_subprocess(tmp_path_factory: TempPathFactory) -> None:
         run(["h3a", "-yc", config_path], check=True)
 
     # -- Assert execution --
-    file_paths_after = set(file_path.name for file_path in file_dir.iterdir())
+    file_paths_after = set(
+        path.relative_to(file_dir).as_posix() for path in file_dir.glob("**/*.*")
+    )
     assert len(file_paths_after) == len(file_paths_before) + 1
     new_paths = file_paths_after - file_paths_before
     assert len(new_paths) == 1
     new_path = list(new_paths)[0]
     assert re.fullmatch(r"foo_v\d{8}-\d{6}.txt", new_path)
-    assert set(file_path.name for file_path in (file_dir / "baz").iterdir()) == {
-        "blah.txt"
-    }
