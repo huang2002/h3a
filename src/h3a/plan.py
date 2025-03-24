@@ -41,7 +41,7 @@ def generate_plan(*, config: Config, root_dir: Path, context: Context) -> Plan:
     if not re.fullmatch(config["tag_pattern"], tag):
         raise RuntimeError(
             f"Generated tag {tag!r} is incompatible with "
-            "tag pattern: {config['tag_pattern']!r}"
+            f"tag pattern: {config['tag_pattern']!r}"
         )
 
     tag_length = len(tag)
