@@ -84,8 +84,8 @@ def test_plan_complex(tmp_path: Path, test_context: "Context") -> None:
         assert tmp_path in plan_item.src.parents
         assert isinstance(plan_item.dest, Path)
         assert tmp_path in plan_item.dest.parents
-        dest_name_pattern = re.escape(plan_item.src.stem)
-        dest_name_pattern += r"__\d{8}"
-        dest_name_pattern += re.escape(plan_item.dest.suffix)
-        assert re.fullmatch(dest_name_pattern, plan_item.dest.name)
+        expected_dest_name = (
+            plan_item.src.stem + strftime("__%Y%m%d") + plan_item.dest.suffix
+        )
+        assert plan_item.dest.name == expected_dest_name
         assert plan_item.overwrite_flag == plan_item.dest.exists()
