@@ -33,16 +33,18 @@ def execute_plan(plan: Plan, *, context: Context) -> None:
             plan,
         )
 
-    # Retrieve results to throw exceptions from threads.
-    if context.verbose:
-        for _ in execute_results_iterable:
-            pass
-    else:
-        with progressbar(
-            execute_results_iterable, label="Executing"
-        ) as execute_results:
-            for _ in execute_results:
+        # Retrieve results to throw exceptions from threads.
+        # (The following code must be put in the with statement because
+        # the progresses must be collected before exiting the with statement.)
+        if context.verbose:
+            for _ in execute_results_iterable:
                 pass
+        else:
+            with progressbar(
+                execute_results_iterable, label="Executing", length=len(plan)
+            ) as execute_results:
+                for _ in execute_results:
+                    pass
 
     if context.verbose:
         with context.log_lock:
