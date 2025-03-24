@@ -2,6 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from logging import getLogger
 from shutil import copy2
+from time import sleep
 
 from click import progressbar
 
@@ -17,6 +18,10 @@ def execute_plan_item(plan_item: PlanItem, *, context: Context) -> None:
             logger.debug(f"Executing plan item: {plan_item!r}")
 
     copy2(plan_item.src, plan_item.dest)
+
+    if context._execute_delay_seconds is not None:
+        assert isinstance(context._execute_delay_seconds, float)
+        sleep(context._execute_delay_seconds)
 
     if context.verbose:
         with context.log_lock:

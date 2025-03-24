@@ -5,7 +5,7 @@ from typing import NamedTuple
 
 import click
 
-from .config import Config, format_config_help, load_config
+from .config import Config, ExtraConfig, format_config_help, load_config
 from .context import Context
 from .execute import execute_plan
 from .plan import Plan, generate_plan
@@ -94,7 +94,12 @@ def main(
     # -- Load config --
     config_file_path = config_file_path.resolve()
     logger.debug(f"Config file path: {config_file_path!r}")
-    config = load_config(config_file_path, encoding=config_encoding)
+    extra_config = ExtraConfig()
+    config = load_config(
+        config_file_path,
+        encoding=config_encoding,
+        extras=extra_config,
+    )
     if threads is not None:
         config["threads"] = threads
     logger.debug(f"Config: {config!r}")
@@ -104,6 +109,7 @@ def main(
         log_lock=RLock(),
         verbose=verbose,
         threads=config["threads"],
+        _execute_delay_seconds=extra_config.get("_execute_delay_seconds", None),
     )
 
     # -- Generate plan --

@@ -61,6 +61,10 @@ class Config(TypedDict):
     ]
 
 
+class ExtraConfig(TypedDict, total=False):
+    _execute_delay_seconds: float
+
+
 config_schema = yaml.Map(
     {
         "include": yaml.Seq(yaml.Str()),
@@ -74,16 +78,28 @@ config_schema = yaml.Map(
             get_annotations(Config)["on_conflict"].__origin__.__args__
         ),
         yaml.Optional("threads", default=DEFAULT_THREADS): yaml.Int(),
+        yaml.Optional("_execute_delay_seconds", default=0.0): yaml.Float(),
     }
 )
 
+EXTRA_CONFIG_KEYS = frozenset[str](get_annotations(ExtraConfig).keys())
 
-def load_config(config_file_path: os.PathLike, encoding: str | None = None) -> Config:
+
+def load_config(
+    config_file_path: os.PathLike,
+    encoding: str | None = None,
+    *,
+    extras: ExtraConfig | None = None,
+) -> Config:
     with open(config_file_path, "r", encoding=encoding) as config_file:
-        return cast(
-            Config,
-            yaml.load(config_file.read(), config_schema).data,
-        )
+        config = cast(Config, yaml.load(config_file.read(), config_schema).data)
+    if extras is not None:
+        for key in EXTRA_CONFIG_KEYS:
+            extras[key] = config.pop(key)
+    else:
+        for key in EXTRA_CONFIG_KEYS:
+            config.pop(key)
+    return config
 
 
 def format_config_help() -> str:
