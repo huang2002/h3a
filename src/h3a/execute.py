@@ -2,6 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from logging import getLogger
 from shutil import copy2
+from threading import RLock
 from time import sleep
 
 from click import progressbar
@@ -12,7 +13,26 @@ from .plan import Plan, PlanItem
 logger = getLogger(__name__)
 
 
-def execute_plan_item(plan_item: PlanItem, *, context: Context) -> None:
+class ExecuteProgress:
+    lock: RLock
+    finished: int
+    total: int
+
+    def __init__(self, total: int) -> None:
+        self.lock = RLock()
+        self.finished = 0
+        self.total = total
+
+    def step(self) -> float:
+        with self.lock:
+            assert self.finished < self.total
+            self.finished += 1
+            return self.finished / self.total
+
+
+def execute_plan_item(
+    plan_item: PlanItem, *, context: Context, progress: ExecuteProgress
+) -> None:
     with context.log_lock:
         logger.debug(f"Executing plan item: {plan_item!r}")
 
@@ -22,17 +42,21 @@ def execute_plan_item(plan_item: PlanItem, *, context: Context) -> None:
         assert isinstance(context._execute_delay_seconds, float)
         sleep(context._execute_delay_seconds)
 
+    precentage = progress.step()
+
     with context.log_lock:
         if plan_item.overwrite_flag:
-            logger.info(f"Overwrote: {plan_item.dest}")
+            logger.info(f"Overwrote: {plan_item.dest} ({precentage:.2%})")
         else:
-            logger.info(f"Created: {plan_item.dest}")
+            logger.info(f"Created: {plan_item.dest} ({precentage:.2%})")
 
 
 def execute_plan(plan: Plan, *, context: Context) -> None:
+    progress = ExecuteProgress(len(plan))
+
     with ThreadPoolExecutor(max_workers=context.threads) as executor:
         execute_results_iterable = executor.map(
-            partial(execute_plan_item, context=context),
+            partial(execute_plan_item, context=context, progress=progress),
             plan,
         )
 
