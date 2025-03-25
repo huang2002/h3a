@@ -112,7 +112,7 @@ def main(
     from .config import ExtraConfig, load_config
     from .context import Context
     from .execute import execute_plan
-    from .plan import generate_plan
+    from .plan import format_plan_item, generate_plan
 
     # -- Load config --
     config_file_path = config_file_path.resolve()
@@ -141,7 +141,7 @@ def main(
     )
     print("Generated plan:")
     for plan_item in plan:
-        print("- " + repr(plan_item))
+        print(format_plan_item(plan_item))
 
     if not dry_run:
         # -- Confirm plan --

@@ -33,6 +33,11 @@ class PlanItem(NamedTuple):
     overwrite_flag: bool
 
 
+def format_plan_item(plan_item: PlanItem) -> str:
+    arrow: str = "~>" if plan_item.overwrite_flag else "->"
+    return f"({plan_item.id}) {plan_item.src} {arrow} {plan_item.dest}"
+
+
 type Plan = list[PlanItem]
 
 

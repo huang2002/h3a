@@ -54,6 +54,7 @@ def test_cli_simple(tmp_path: Path) -> None:
         DEFAULT_THREADS,
         Config,
     )
+    from h3a.plan import format_plan_item
 
     # -- Initialize test files --
     (tmp_path / "foo.txt").write_text("foo")
@@ -102,7 +103,7 @@ def test_cli_simple(tmp_path: Path) -> None:
 
     # -- Assert cli output --
     assert cli_result.output.startswith(
-        f"Generated plan:\n- {plan[0]!r}\nContinue? [y/N]: y\nExecuting"
+        f"Generated plan:\n{format_plan_item(plan[0])}\nContinue? [y/N]: y\nExecuting"
     )
 
     # -- Assert execution --
