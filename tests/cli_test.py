@@ -20,8 +20,9 @@ def test_cli_help() -> None:
         "  --help-config                Show config schema and exit.\n"
         "  -y, --skip-confirm           Skip confirmation prompt.\n"
         "  -t, --threads INTEGER RANGE  Number of threads to use.  [x>=1]\n"
-        "  -d, --dry-run                Print plan and exit.\n"
-        "  --verbose                    Enable debug logging.\n"
+        "  --dry-run                    Print plan and exit.\n"
+        "  --verbose                    Enable info-level logging.\n"
+        "  --debug                      Enable debug-level logging.\n"
         "  --version                    Show the version and exit.\n"
         "  --help                       Show this message and exit.\n"
     )
@@ -85,6 +86,7 @@ def test_cli_simple(tmp_path: Path) -> None:
     # -- Assert context --
     context = cli_return_value.context
     assert not context.verbose
+    assert not context.debug
     assert context.threads == DEFAULT_THREADS
 
     # -- Assert plan --
@@ -97,6 +99,11 @@ def test_cli_simple(tmp_path: Path) -> None:
     assert plan[0].dest.parent == tmp_path
     assert re.fullmatch(r"foo_v\d{8}-\d{6}.txt", plan[0].dest.name)
     assert not plan[0].overwrite_flag
+
+    # -- Assert cli output --
+    assert cli_result.output.startswith(
+        f"Generated plan:\n- {plan[0]!r}\nContinue? [y/N]: y\nExecuting"
+    )
 
     # -- Assert execution --
     assert set(
@@ -160,6 +167,7 @@ def test_cli_complex(tmp_path: Path) -> None:
     # -- Assert context --
     context = cli_return_value.context
     assert context.verbose
+    assert not context.debug
     assert context.threads == 1
 
     # -- Assert plan --
@@ -218,7 +226,7 @@ def test_cli_dry_run(tmp_path: Path) -> None:
     cli_runner = CliRunner()
     with chdir(tmp_path):
         cli_result = cli_runner.invoke(
-            main, ["--dry-run"], input="y\n", standalone_mode=False
+            main, ["--dry-run", "--debug"], input="y\n", standalone_mode=False
         )
 
     # -- Assert cli result --
@@ -239,7 +247,8 @@ def test_cli_dry_run(tmp_path: Path) -> None:
 
     # -- Assert context --
     context = cli_return_value.context
-    assert not context.verbose
+    assert context.verbose
+    assert context.debug
     assert context.threads == DEFAULT_THREADS
 
     # -- Assert plan --

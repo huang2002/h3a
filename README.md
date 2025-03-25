@@ -20,8 +20,9 @@ Options:
   --help-config                Show config schema and exit.
   -y, --skip-confirm           Skip confirmation prompt.
   -t, --threads INTEGER RANGE  Number of threads to use.  [x>=1]
-  -d, --dry-run                Print plan and exit.
-  --verbose                    Enable debug logging.
+  --dry-run                    Print plan and exit.
+  --verbose                    Enable info-level logging.
+  --debug                      Enable debug-level logging.
   --version                    Show the version and exit.
   --help                       Show this message and exit.
 ```

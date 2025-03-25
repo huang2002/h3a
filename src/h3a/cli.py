@@ -1,29 +1,30 @@
 import logging
 from pathlib import Path
 from threading import RLock
-from typing import NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 
 import click
 
-from .config import Config, ExtraConfig, format_config_help, load_config
-from .context import Context
-from .execute import execute_plan
-from .plan import Plan, generate_plan
-
-logger = logging.getLogger(__name__)
+if TYPE_CHECKING:  # pragma: no cover
+    from .config import Config
+    from .context import Context
+    from .plan import Plan
 
 
 def help_config(context: click.Context, param: click.Parameter, value: object) -> None:
     if not value or context.resilient_parsing:
         return
+
+    from .config import format_config_help
+
     click.echo(format_config_help(), nl=False)
     context.exit()
 
 
 class CliResult(NamedTuple):
-    config: Config
-    context: Context
-    plan: Plan
+    config: "Config"
+    context: "Context"
+    plan: "Plan"
 
 
 @click.command()
@@ -65,7 +66,6 @@ class CliResult(NamedTuple):
     help="Number of threads to use.",
 )
 @click.option(
-    "-d",
     "--dry-run",
     is_flag=True,
     help="Print plan and exit.",
@@ -73,7 +73,12 @@ class CliResult(NamedTuple):
 @click.option(
     "--verbose",
     is_flag=True,
-    help="Enable debug logging.",
+    help="Enable info-level logging.",
+)
+@click.option(
+    "--debug",
+    is_flag=True,
+    help="Enable debug-level logging.",
 )
 @click.version_option()
 def main(
@@ -83,13 +88,31 @@ def main(
     threads: int | None,
     dry_run: bool,
     verbose: bool,
+    debug: bool,
 ) -> CliResult:
     """A simple script for file archiving."""
 
+    if debug:
+        verbose = True
+
     # -- Setup logging --
-    logging.basicConfig(format="%(asctime)s [%(levelname)5s] (%(name)s) %(message)s")
+    logging_level: int = logging.WARNING
     if verbose:
-        logging.basicConfig(level=logging.DEBUG)
+        logging_level = logging.INFO
+    if debug:
+        logging_level = logging.DEBUG
+    logging.basicConfig(
+        level=logging_level,
+        format="%(asctime)s [%(levelname)5s] (%(name)s) %(message)s",
+        force=True,
+    )
+    logger = logging.getLogger(__name__)
+
+    # -- Import APIs --
+    from .config import ExtraConfig, load_config
+    from .context import Context
+    from .execute import execute_plan
+    from .plan import generate_plan
 
     # -- Load config --
     config_file_path = config_file_path.resolve()
@@ -107,6 +130,7 @@ def main(
     context = Context(
         log_lock=RLock(),
         verbose=verbose,
+        debug=debug,
         threads=config["threads"],
         _execute_delay_seconds=extra_config.get("_execute_delay_seconds", None),
     )

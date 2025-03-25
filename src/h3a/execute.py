@@ -13,9 +13,8 @@ logger = getLogger(__name__)
 
 
 def execute_plan_item(plan_item: PlanItem, *, context: Context) -> None:
-    if context.verbose:
-        with context.log_lock:
-            logger.debug(f"Executing plan item: {plan_item!r}")
+    with context.log_lock:
+        logger.debug(f"Executing plan item: {plan_item!r}")
 
     copy2(plan_item.src, plan_item.dest)
 
@@ -23,12 +22,11 @@ def execute_plan_item(plan_item: PlanItem, *, context: Context) -> None:
         assert isinstance(context._execute_delay_seconds, float)
         sleep(context._execute_delay_seconds)
 
-    if context.verbose:
-        with context.log_lock:
-            if plan_item.overwrite_flag:
-                logger.info(f"Overwrote: {plan_item.dest}")
-            else:
-                logger.info(f"Created: {plan_item.dest}")
+    with context.log_lock:
+        if plan_item.overwrite_flag:
+            logger.info(f"Overwrote: {plan_item.dest}")
+        else:
+            logger.info(f"Created: {plan_item.dest}")
 
 
 def execute_plan(plan: Plan, *, context: Context) -> None:
@@ -51,6 +49,5 @@ def execute_plan(plan: Plan, *, context: Context) -> None:
                 for _ in execute_results:
                     pass
 
-    if context.verbose:
-        with context.log_lock:
-            logger.info("All done.")
+    with context.log_lock:
+        logger.info("All done.")

@@ -54,7 +54,7 @@ def generate_plan(*, config: Config, root_dir: Path, context: Context) -> Plan:
         if re.fullmatch(config["tag_pattern"], src_path.stem[-tag_length:]):
             skipped_paths.add(src_path)
             with context.log_lock:
-                logger.warning(f"Skipping file with matched tag: {src_path}")
+                logger.info(f"Skipping file with matched tag: {src_path}")
             continue
 
         overwrite_flag = False
@@ -69,9 +69,7 @@ def generate_plan(*, config: Config, root_dir: Path, context: Context) -> Plan:
                     raise RuntimeError(f"Destination file exists: {dest_path}")
                 case "skip":
                     with context.log_lock:
-                        logger.warning(
-                            f"Skipping existing destination file: {dest_path}"
-                        )
+                        logger.info(f"Skipping existing destination file: {dest_path}")
                     continue
                 case "overwrite":
                     overwrite_flag = True

@@ -15,5 +15,6 @@ def test_context() -> "Context":
     return Context(
         log_lock=RLock(),
         verbose=True,
+        debug=True,
         threads=1,
     )
