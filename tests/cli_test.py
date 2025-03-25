@@ -35,6 +35,8 @@ def test_cli_help_config() -> None:
         "    An array of glob patterns to include.\n"
         "exclude (list[str], optional):\n"
         "    An array of glob patterns to exclude. (default: [])\n"
+        "out_dir (str, optional):\n"
+        "    The output path prefix.\n"
         "tag_format (str, optional):\n"
         "    The strftime format of the dest tag. (default: '_v%Y%m%d-%H%M%S')\n"
         "tag_pattern (str, optional):\n"
@@ -78,6 +80,7 @@ def test_cli_simple(tmp_path: Path) -> None:
     assert cli_return_value.config == Config(
         include=["foo.txt"],
         exclude=[],
+        out_dir="",
         tag_format=DEFAULT_TAG_FORMAT,
         tag_pattern=DEFAULT_TAG_PATTERN,
         on_conflict="error",
@@ -126,7 +129,8 @@ def test_cli_complex(tmp_path: Path) -> None:
 
     # -- Initialize test files --
     (tmp_path / "foo.txt").write_text("foo")
-    (tmp_path / "foo.backup.txt").write_text("foo")
+    (tmp_path / "archive").mkdir()
+    (tmp_path / "archive/foo.backup.txt").write_text("foo")
     (tmp_path / "bar.txt").write_text("bar")
     (tmp_path / "baz.txt").write_text("bar")
     (tmp_path / "blah").mkdir()
@@ -136,6 +140,7 @@ def test_cli_complex(tmp_path: Path) -> None:
         "  - '*.txt'\n"
         "exclude:\n"
         "  - bar.txt\n"
+        "out_dir: archive\n"
         "tag_format: .backup\n"
         "tag_pattern: .backup\n"
         "on_conflict: overwrite\n"
@@ -159,6 +164,7 @@ def test_cli_complex(tmp_path: Path) -> None:
     assert cli_return_value.config == Config(
         include=["*.txt"],
         exclude=["bar.txt"],
+        out_dir="archive",
         tag_format=".backup",
         tag_pattern=".backup",
         on_conflict="overwrite",
@@ -180,13 +186,13 @@ def test_cli_complex(tmp_path: Path) -> None:
         PlanItem(
             id=-1,
             src=(tmp_path / "foo.txt"),
-            dest=(tmp_path / "foo.backup.txt"),
+            dest=(tmp_path / "archive/foo.backup.txt"),
             overwrite_flag=True,
         ),
         PlanItem(
             id=-1,
             src=(tmp_path / "baz.txt"),
-            dest=(tmp_path / "baz.backup.txt"),
+            dest=(tmp_path / "archive/baz.backup.txt"),
             overwrite_flag=False,
         ),
     }
@@ -196,10 +202,10 @@ def test_cli_complex(tmp_path: Path) -> None:
         path.relative_to(tmp_path).as_posix() for path in tmp_path.glob("**/*.*")
     ) == {
         "foo.txt",
-        "foo.backup.txt",
+        "archive/foo.backup.txt",
         "bar.txt",
         "baz.txt",
-        "baz.backup.txt",
+        "archive/baz.backup.txt",
         "h3a.yaml",
         "blah/blah.txt",
     }
@@ -240,6 +246,7 @@ def test_cli_dry_run(tmp_path: Path) -> None:
     assert cli_return_value.config == Config(
         include=["foo.txt"],
         exclude=[],
+        out_dir="",
         tag_format=DEFAULT_TAG_FORMAT,
         tag_pattern=DEFAULT_TAG_PATTERN,
         on_conflict="error",

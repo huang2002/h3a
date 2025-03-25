@@ -29,6 +29,13 @@ class Config(TypedDict):
             help="An array of glob patterns to exclude. (default: [])",
         ),
     ]
+    out_dir: Annotated[
+        str,
+        ConfigItemMetaData(
+            required=False,
+            help="The output path prefix.",
+        ),
+    ]
     tag_format: Annotated[
         str,
         ConfigItemMetaData(
@@ -70,6 +77,7 @@ config_schema = yaml.Map(
             yaml.Seq(yaml.Str()),
             yaml.EmptyList(),
         ),
+        yaml.Optional("out_dir", default=""): yaml.Str(),
         yaml.Optional("tag_format", default=DEFAULT_TAG_FORMAT): yaml.Str(),
         yaml.Optional("tag_pattern", default=DEFAULT_TAG_PATTERN): yaml.Str(),
         yaml.Optional("on_conflict", default=DEFAULT_ON_CONFLICT): yaml.Enum(

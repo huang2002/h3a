@@ -80,6 +80,8 @@ include (list[str]):
     An array of glob patterns to include.
 exclude (list[str], optional):
     An array of glob patterns to exclude. (default: [])
+out_dir (str, optional):
+    The output path prefix.
 tag_format (str, optional):
     The strftime format of the dest tag. (default: '_v%Y%m%d-%H%M%S')
 tag_pattern (str, optional):

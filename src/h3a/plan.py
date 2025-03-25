@@ -50,6 +50,7 @@ def generate_plan(*, config: Config, root_dir: Path, context: Context) -> Plan:
         )
 
     tag_length = len(tag)
+    out_dir = (root_dir / config["out_dir"]).resolve()
     plan: Plan = []
     src_paths = collect_source_files(root_dir, config)
     overwriting_src_paths = set[Path]()
@@ -64,7 +65,11 @@ def generate_plan(*, config: Config, root_dir: Path, context: Context) -> Plan:
 
         overwrite_flag = False
 
-        dest_path = src_path.with_stem(src_path.stem + tag)
+        assert src_path.is_relative_to(root_dir)
+        dest_stem = src_path.stem + tag
+        relative_dest_path = src_path.with_stem(dest_stem).relative_to(root_dir)
+        dest_path = out_dir / relative_dest_path
+
         if dest_path.exists():
             if dest_path in src_paths:
                 overwriting_src_paths.add(dest_path)

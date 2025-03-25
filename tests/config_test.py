@@ -25,6 +25,7 @@ def test_config_simple(tmp_path: Path) -> None:
     assert config == Config(
         include=["foo.txt"],
         exclude=[],
+        out_dir="",
         tag_format=DEFAULT_TAG_FORMAT,
         tag_pattern=DEFAULT_TAG_PATTERN,
         on_conflict="error",
@@ -47,6 +48,7 @@ def test_config_complex(tmp_path: Path) -> None:
         '  - "**/baz.txt"\n'
         "exclude:\n"
         "  - bar/baz.txt\n"
+        "out_dir: archive\n"
         "tag_format: _%Y%m%d\n"
         "tag_pattern: '_\\d{8}'\n"
         "on_conflict: skip\n"
@@ -61,6 +63,7 @@ def test_config_complex(tmp_path: Path) -> None:
     assert config == Config(
         include=["foo.txt", "bar/*.py", "**/baz.txt"],
         exclude=["bar/baz.txt"],
+        out_dir="archive",
         tag_format="_%Y%m%d",
         tag_pattern=r"_\d{8}",
         on_conflict="skip",

@@ -36,6 +36,7 @@ def execute_plan_item(
     with context.log_lock:
         logger.debug(f"Executing plan item: {plan_item!r}")
 
+    plan_item.dest.parent.mkdir(parents=True, exist_ok=True)
     copy2(plan_item.src, plan_item.dest)
 
     if context._execute_delay_seconds is not None:
