@@ -14,7 +14,6 @@ class ConfigItemMetaData(NamedTuple):
     help: str
 
 
-# TODO: add config docs
 class Config(TypedDict):
     include: Annotated[
         list[str],
