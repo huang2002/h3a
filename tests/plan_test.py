@@ -20,7 +20,7 @@ def test_plan_simple(tmp_path: Path, test_context: "Context") -> None:
     (tmp_path / "h3a.yaml").write_text("include:\n  - '*.txt'\n")
 
     # -- Generate plan --
-    config = load_config(tmp_path / "h3a.yaml")
+    config = load_config((tmp_path / "h3a.yaml").read_text())
     plan = generate_plan(config=config, root_dir=tmp_path, context=test_context)
     assert isinstance(plan, list)
     assert all(isinstance(plan_item, PlanItem) for plan_item in plan)
@@ -48,7 +48,7 @@ def test_plan_tag_unmatch(tmp_path: Path, test_context: "Context") -> None:
     )
 
     # -- Generate plan --
-    config = load_config(tmp_path / "h3a.yaml")
+    config = load_config((tmp_path / "h3a.yaml").read_text())
     with raises(
         RuntimeError,
         match="Generated tag '.backup' is incompatible with tag pattern: '_backup'",
@@ -68,7 +68,7 @@ def test_plan_conflict_error(tmp_path: Path, test_context: "Context") -> None:
     )
 
     # -- Generate plan --
-    config = load_config(tmp_path / "h3a.yaml")
+    config = load_config((tmp_path / "h3a.yaml").read_text())
     with raises(
         RuntimeError, match=f"Destination file exists: {tmp_path / 'foo_backup.txt'}"
     ):
@@ -91,7 +91,7 @@ def test_plan_conflict_skip(tmp_path: Path, test_context: "Context") -> None:
     )
 
     # -- Generate plan --
-    config = load_config(tmp_path / "h3a.yaml")
+    config = load_config((tmp_path / "h3a.yaml").read_text())
     plan = generate_plan(config=config, root_dir=tmp_path, context=test_context)
     assert isinstance(plan, list)
     assert all(isinstance(plan_item, PlanItem) for plan_item in plan)
@@ -110,7 +110,7 @@ def test_plan_overwriting_src(tmp_path: Path, test_context: "Context") -> None:
     )
 
     # -- Generate plan --
-    config = load_config(tmp_path / "h3a.yaml")
+    config = load_config((tmp_path / "h3a.yaml").read_text())
     with raises(
         RuntimeError,
         match="Generated tag '.backup' is incompatible with tag pattern: '_backup'",
@@ -149,7 +149,7 @@ def test_plan_complex(tmp_path: Path, test_context: "Context") -> None:
     )
 
     # -- Generate plan --
-    config = load_config(tmp_path / "h3a.yaml")
+    config = load_config((tmp_path / "h3a.yaml").read_text())
     plan = generate_plan(config=config, root_dir=tmp_path, context=test_context)
     assert isinstance(plan, list)
     assert all(isinstance(plan_item, PlanItem) for plan_item in plan)

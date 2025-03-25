@@ -18,7 +18,7 @@ def test_config_simple(tmp_path: Path) -> None:
     (tmp_path / "h3a.yaml").write_text("include:\n  - foo.txt\n")
 
     # -- Load config --
-    config = load_config(tmp_path / "h3a.yaml")
+    config = load_config((tmp_path / "h3a.yaml").read_text())
     assert isinstance(config, dict)
 
     # -- Assert config content --
@@ -54,7 +54,7 @@ def test_config_complex(tmp_path: Path) -> None:
     )
 
     # -- Load config --
-    config = load_config(tmp_path / "h3a.yaml")
+    config = load_config((tmp_path / "h3a.yaml").read_text())
     assert isinstance(config, dict)
 
     # -- Assert config content --

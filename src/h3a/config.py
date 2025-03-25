@@ -85,14 +85,8 @@ config_schema = yaml.Map(
 EXTRA_CONFIG_KEYS = frozenset[str](get_annotations(ExtraConfig).keys())
 
 
-def load_config(
-    config_file_path: os.PathLike,
-    encoding: str | None = None,
-    *,
-    extras: ExtraConfig | None = None,
-) -> Config:
-    with open(config_file_path, "r", encoding=encoding) as config_file:
-        config = cast(Config, yaml.load(config_file.read(), config_schema).data)
+def load_config(yaml_string: str, *, extras: ExtraConfig | None = None) -> Config:
+    config = cast(Config, yaml.load(yaml_string, config_schema).data)
     if extras is not None:
         for key in EXTRA_CONFIG_KEYS:
             extras[key] = config.pop(key)

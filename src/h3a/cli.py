@@ -96,8 +96,7 @@ def main(
     logger.debug(f"Config file path: {config_file_path!r}")
     extra_config = ExtraConfig()
     config = load_config(
-        config_file_path,
-        encoding=config_encoding,
+        config_file_path.read_text(encoding=config_encoding),
         extras=extra_config,
     )
     if threads is not None:
