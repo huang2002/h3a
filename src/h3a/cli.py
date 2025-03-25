@@ -103,7 +103,7 @@ def main(
         logging_level = logging.DEBUG
     logging.basicConfig(
         level=logging_level,
-        format="%(asctime)s [%(levelname)5s] (%(name)s) %(message)s",
+        format="[%(asctime)s] %(levelname)s (%(name)s) %(message)s",
         force=True,
     )
     logger = logging.getLogger(__name__)
