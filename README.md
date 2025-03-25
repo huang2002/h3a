@@ -50,7 +50,7 @@ tag_pattern (str, optional):
 on_conflict (typing.Literal['error', 'skip', 'overwrite'], optional):
     The action of existing dest files. (default: 'error')
 threads (int, optional):
-    The number of maximum threads to use. (default: 16)
+    The number of maximum threads to use. (default: 8)
 ```
 
 ## License

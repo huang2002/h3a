@@ -41,7 +41,7 @@ def test_cli_help_config() -> None:
         "on_conflict (typing.Literal['error', 'skip', 'overwrite'], optional):\n"
         "    The action of existing dest files. (default: 'error')\n"
         "threads (int, optional):\n"
-        "    The number of maximum threads to use. (default: 16)\n"
+        "    The number of maximum threads to use. (default: 8)\n"
     )
 
 

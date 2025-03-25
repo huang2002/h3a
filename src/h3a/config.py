@@ -1,4 +1,3 @@
-import os
 from inspect import get_annotations
 from typing import Annotated, Final, Literal, NamedTuple, TypedDict, cast
 
@@ -7,7 +6,7 @@ import strictyaml as yaml
 DEFAULT_TAG_FORMAT: Final = "_v%Y%m%d-%H%M%S"
 DEFAULT_TAG_PATTERN: Final = r"_v\d{8}-\d{6}"
 DEFAULT_ON_CONFLICT: Final = "error"
-DEFAULT_THREADS: Final = min(16, os.cpu_count() or 1)
+DEFAULT_THREADS: Final = 8
 
 
 class ConfigItemMetaData(NamedTuple):
