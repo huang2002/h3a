@@ -2,6 +2,10 @@
 
 > A simple script for file archiving.
 
+- Python: >=3.12
+- Test Coverage: 100%
+- License: ISC
+
 ## Usage
 
 ```sh
@@ -22,17 +26,49 @@ Options:
   --help                       Show this message and exit.
 ```
 
-## Example Configuration
+## Example
+
+Say you wanna archive all the Office files in the current directory except the ones starts with `_`:
+
+```txt
+some_directory/
++-- foo.docx
++-- bar.pptx
++-- baz.xlsx
+`-- _blah.docx
+```
+
+You can first create a config file `h3a.yaml`:
 
 ```yaml
 # h3a.yaml
 include:
-  - '*.docx'
-  - '*.pptx'
-  - '*.xlsx'
+  - '**/*.docx'
+  - '**/*.pptx'
+  - '**/*.xlsx'
 exclude:
   - '_*.*'
 on_conflict: overwrite
+```
+
+Then, execute `h3a` in the directory and confirm the archive plan:
+
+```sh
+h3a
+```
+
+Now you get your files archived: (The actual time tag differs.)
+
+```txt
+some_directory/
++-- h3a.yaml
++-- foo.docx
++-- foo_v20251024-123456.docx
++-- bar.pptx
++-- bar_v20251024-123456.pptx
++-- baz.xlsx
++-- baz_v20251024-123456.xlsx
+`-- _blah.docx
 ```
 
 ## Configuration Schema
@@ -52,7 +88,3 @@ on_conflict (typing.Literal['error', 'skip', 'overwrite'], optional):
 threads (int, optional):
     The number of maximum threads to use. (default: 8)
 ```
-
-## License
-
-ISC Licensed.
