@@ -24,6 +24,9 @@ include = ["src"]
 [dependency-groups]
 dev = ["pytest>=8.3.5", "pytest-cov>=6.0.0", "ruff>=0.9.9"]
 
+[tool.uv]
+keyring-provider = "subprocess"
+
 [tool.pytest.ini_options]
 tmp_path_retention_policy = "failed"
 
