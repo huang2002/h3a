@@ -6,6 +6,8 @@ from subprocess import run
 from click.testing import CliRunner
 from pytest import TempPathFactory
 
+TIMESTAMP_PATTERN = r"\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}\]"
+
 
 def test_cli_help() -> None:
     process = run(["h3a", "--help"], check=True, capture_output=True, text=True)
@@ -125,7 +127,7 @@ def test_cli_simple(tmp_path: Path) -> None:
 def test_cli_complex(tmp_path: Path) -> None:
     from h3a.cli import CliResult, main
     from h3a.config import Config
-    from h3a.plan import PlanItem
+    from h3a.plan import PlanItem, format_plan_item
 
     # -- Initialize test files --
     (tmp_path / "foo.txt").write_text("foo")
@@ -196,6 +198,32 @@ def test_cli_complex(tmp_path: Path) -> None:
             overwrite_flag=False,
         ),
     }
+
+    # -- Assert cli output --
+    expected_begin_lines = [
+        "Generated plan:",
+        f"{format_plan_item(plan[0])}",
+        f"{format_plan_item(plan[1])}",
+        "Continue? [y/N]: y",
+    ]
+    n_expected_begin_lines = len(expected_begin_lines)
+    actual_lines = cli_result.output.splitlines()
+    assert len(actual_lines) == n_expected_begin_lines + 3
+    assert actual_lines[:n_expected_begin_lines] == expected_begin_lines
+    assert re.fullmatch(
+        TIMESTAMP_PATTERN
+        + re.escape(f" INFO (h3a.execute) Overwrote: {plan[0].dest} (50.00%)"),
+        actual_lines[n_expected_begin_lines],
+    )
+    assert re.fullmatch(
+        TIMESTAMP_PATTERN
+        + re.escape(f" INFO (h3a.execute) Created: {plan[1].dest} (100.00%)"),
+        actual_lines[n_expected_begin_lines + 1],
+    )
+    assert re.fullmatch(
+        TIMESTAMP_PATTERN + re.escape(" INFO (h3a.execute) All done."),
+        actual_lines[n_expected_begin_lines + 2],
+    )
 
     # -- Assert execution --
     assert set(
