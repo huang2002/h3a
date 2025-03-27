@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [{ name = "hhh", email = "huanghaihua2002@qq.com" }]
 license = { text = "ISC" }
 requires-python = ">=3.12"
-dependencies = ["click>=8.1.8", "pytest>=8.3.5", "strictyaml>=1.7.3"]
+dependencies = ["click>=8.1.8", "strictyaml>=1.7.3"]
 
 [project.urls]
 homepage = "https://github.com/huang2002/h3a"
@@ -19,7 +19,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-dev = ["pytest-cov>=6.0.0", "ruff>=0.9.9"]
+dev = ["pytest>=8.3.5", "pytest-cov>=6.0.0", "ruff>=0.9.9"]
 
 [tool.pytest.ini_options]
 tmp_path_retention_policy = "failed"
