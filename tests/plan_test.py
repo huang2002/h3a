@@ -69,8 +69,9 @@ def test_plan_conflict_error(tmp_path: Path, test_context: "Context") -> None:
 
     # -- Generate plan --
     config = load_config((tmp_path / "h3a.yaml").read_text())
+    foo_backup_path_escaped = re.escape(str(tmp_path / "foo_backup.txt"))
     with raises(
-        RuntimeError, match=f"Destination file exists: {tmp_path / 'foo_backup.txt'}"
+        RuntimeError, match=f"Destination file exists: {foo_backup_path_escaped}"
     ):
         _plan = generate_plan(config=config, root_dir=tmp_path, context=test_context)
 

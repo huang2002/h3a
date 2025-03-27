@@ -210,14 +210,17 @@ def test_cli_complex(tmp_path: Path) -> None:
     actual_lines = cli_result.output.splitlines()
     assert len(actual_lines) == n_expected_begin_lines + 3
     assert actual_lines[:n_expected_begin_lines] == expected_begin_lines
+    actions = (
+        ("Overwrote", "Created") if plan[0].overwrite_flag else ("Created", "Overwrote")
+    )
     assert re.fullmatch(
         TIMESTAMP_PATTERN
-        + re.escape(f" INFO (h3a.execute) Overwrote: {plan[0].dest} (50.00%)"),
+        + re.escape(f" INFO (h3a.execute) {actions[0]}: {plan[0].dest} (50.00%)"),
         actual_lines[n_expected_begin_lines],
     )
     assert re.fullmatch(
         TIMESTAMP_PATTERN
-        + re.escape(f" INFO (h3a.execute) Created: {plan[1].dest} (100.00%)"),
+        + re.escape(f" INFO (h3a.execute) {actions[1]}: {plan[1].dest} (100.00%)"),
         actual_lines[n_expected_begin_lines + 1],
     )
     assert re.fullmatch(
