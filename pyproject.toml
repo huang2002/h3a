@@ -8,6 +8,9 @@ license = { text = "ISC" }
 requires-python = ">=3.12"
 dependencies = ["click>=8.1.8", "pytest>=8.3.5", "strictyaml>=1.7.3"]
 
+[project.urls]
+homepage = "https://github.com/huang2002/h3a"
+
 [project.scripts]
 h3a = "h3a.cli:main"
 
