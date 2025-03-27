@@ -4,6 +4,7 @@
 
 - Python: >=3.12
 - Test Coverage: 100%
+- Well Typed: Yes
 - License: ISC
 
 ## Usage
