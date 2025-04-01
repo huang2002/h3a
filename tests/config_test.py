@@ -1,6 +1,27 @@
 from pathlib import Path
 
 
+def test_config_help() -> None:
+    from h3a.config import format_config_help
+
+    assert format_config_help() == (
+        "include (list[str]):\n"
+        "    An array of glob patterns to include.\n"
+        "exclude (list[str], optional):\n"
+        "    An array of glob patterns to exclude. (default: [])\n"
+        "out_dir (str, optional):\n"
+        "    The output path prefix.\n"
+        "tag_format (str, optional):\n"
+        "    The strftime format of the dest tag. (default: '_v%Y%m%d-%H%M%S')\n"
+        "tag_pattern (str, optional):\n"
+        "    A regex pattern to match existing dest tags. (default: '_v\\\\d{8}-\\\\d{6}')\n"
+        "on_conflict (typing.Literal['error', 'skip', 'overwrite'], optional):\n"
+        "    The action of existing dest files. (default: 'error')\n"
+        "threads (int, optional):\n"
+        "    The number of maximum threads to use. (default: 8)\n"
+    )
+
+
 def test_config_simple(tmp_path: Path) -> None:
     from h3a.config import (
         DEFAULT_TAG_FORMAT,
