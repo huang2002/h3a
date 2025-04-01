@@ -3,8 +3,8 @@ from fnmatch import fnmatch
 from glob import glob
 from logging import getLogger
 from pathlib import Path
-from time import strftime
-from typing import NamedTuple
+from time import localtime, strftime
+from typing import NamedTuple, assert_never
 
 from .config import Config
 from .context import Context
@@ -38,18 +38,21 @@ def format_plan_item(plan_item: PlanItem) -> str:
     return f"({plan_item.id}) {plan_item.src} {arrow} {plan_item.dest}"
 
 
+def assert_tag_pattern(tag: str, tag_pattern: str) -> None:
+    if not re.fullmatch(tag_pattern, tag):
+        raise RuntimeError(
+            f"Generated tag {tag!r} is incompatible with tag pattern: {tag_pattern!r}"
+        )
+
+
 type Plan = list[PlanItem]
 
 
 def generate_plan(*, config: Config, root_dir: Path, context: Context) -> Plan:
-    tag = strftime(config["tag_format"])
-    if not re.fullmatch(config["tag_pattern"], tag):
-        raise RuntimeError(
-            f"Generated tag {tag!r} is incompatible with "
-            f"tag pattern: {config['tag_pattern']!r}"
-        )
+    init_tag = strftime(config["tag_format"])
+    assert_tag_pattern(init_tag, config["tag_pattern"])
 
-    tag_length = len(tag)
+    tag_length = len(init_tag)
     out_dir = (root_dir / config["out_dir"]).resolve()
     plan: Plan = []
     src_paths = collect_source_files(root_dir, config)
@@ -64,6 +67,20 @@ def generate_plan(*, config: Config, root_dir: Path, context: Context) -> Plan:
             continue
 
         overwrite_flag = False
+
+        tag: str
+        match config["tag_time_source"]:
+            case "now":
+                tag = init_tag
+            case "mtime":
+                time = localtime(src_path.stat().st_mtime)
+                tag = strftime(config["tag_format"], time)
+            case "ctime":
+                time = localtime(src_path.stat().st_ctime)
+                tag = strftime(config["tag_format"], time)
+            case _:  # pragma: no cover
+                assert_never(config["tag_time_source"])
+        assert_tag_pattern(tag, config["tag_pattern"])
 
         assert src_path.is_relative_to(root_dir)
         dest_stem = src_path.stem + tag

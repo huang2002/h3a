@@ -83,6 +83,8 @@ exclude (list[str], optional):
     An array of glob patterns to exclude. (default: [])
 out_dir (str, optional):
     The output path prefix.
+tag_time_source (typing.Literal['now', 'mtime', 'ctime'], optional):
+    The source of the timestamp in the dest tag. (default: 'mtime')
 tag_format (str, optional):
     The strftime format of the dest tag. (default: '_v%Y%m%d-%H%M%S')
 tag_pattern (str, optional):

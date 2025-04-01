@@ -39,6 +39,8 @@ def test_cli_help_config() -> None:
         "    An array of glob patterns to exclude. (default: [])\n"
         "out_dir (str, optional):\n"
         "    The output path prefix.\n"
+        "tag_time_source (typing.Literal['now', 'mtime', 'ctime'], optional):\n"
+        "    The source of the timestamp in the dest tag. (default: 'mtime')\n"
         "tag_format (str, optional):\n"
         "    The strftime format of the dest tag. (default: '_v%Y%m%d-%H%M%S')\n"
         "tag_pattern (str, optional):\n"
@@ -53,8 +55,10 @@ def test_cli_help_config() -> None:
 def test_cli_simple(tmp_path: Path) -> None:
     from h3a.cli import CliResult, main
     from h3a.config import (
+        DEFAULT_ON_CONFLICT,
         DEFAULT_TAG_FORMAT,
         DEFAULT_TAG_PATTERN,
+        DEFAULT_TAG_TIME_SOURCE,
         DEFAULT_THREADS,
         Config,
     )
@@ -83,9 +87,10 @@ def test_cli_simple(tmp_path: Path) -> None:
         include=["foo.txt"],
         exclude=[],
         out_dir="",
+        tag_time_source=DEFAULT_TAG_TIME_SOURCE,
         tag_format=DEFAULT_TAG_FORMAT,
         tag_pattern=DEFAULT_TAG_PATTERN,
-        on_conflict="error",
+        on_conflict=DEFAULT_ON_CONFLICT,
         threads=DEFAULT_THREADS,
     )
 
@@ -143,6 +148,7 @@ def test_cli_complex(tmp_path: Path) -> None:
         "exclude:\n"
         "  - bar.txt\n"
         "out_dir: archive\n"
+        "tag_time_source: now\n"
         "tag_format: .backup\n"
         "tag_pattern: .backup\n"
         "on_conflict: overwrite\n"
@@ -167,6 +173,7 @@ def test_cli_complex(tmp_path: Path) -> None:
         include=["*.txt"],
         exclude=["bar.txt"],
         out_dir="archive",
+        tag_time_source="now",
         tag_format=".backup",
         tag_pattern=".backup",
         on_conflict="overwrite",
@@ -247,8 +254,10 @@ def test_cli_complex(tmp_path: Path) -> None:
 def test_cli_dry_run(tmp_path: Path) -> None:
     from h3a.cli import CliResult, main
     from h3a.config import (
+        DEFAULT_ON_CONFLICT,
         DEFAULT_TAG_FORMAT,
         DEFAULT_TAG_PATTERN,
+        DEFAULT_TAG_TIME_SOURCE,
         DEFAULT_THREADS,
         Config,
     )
@@ -278,9 +287,10 @@ def test_cli_dry_run(tmp_path: Path) -> None:
         include=["foo.txt"],
         exclude=[],
         out_dir="",
+        tag_time_source=DEFAULT_TAG_TIME_SOURCE,
         tag_format=DEFAULT_TAG_FORMAT,
         tag_pattern=DEFAULT_TAG_PATTERN,
-        on_conflict="error",
+        on_conflict=DEFAULT_ON_CONFLICT,
         threads=DEFAULT_THREADS,
     )
 

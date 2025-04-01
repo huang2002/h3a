@@ -11,6 +11,8 @@ def test_config_help() -> None:
         "    An array of glob patterns to exclude. (default: [])\n"
         "out_dir (str, optional):\n"
         "    The output path prefix.\n"
+        "tag_time_source (typing.Literal['now', 'mtime', 'ctime'], optional):\n"
+        "    The source of the timestamp in the dest tag. (default: 'mtime')\n"
         "tag_format (str, optional):\n"
         "    The strftime format of the dest tag. (default: '_v%Y%m%d-%H%M%S')\n"
         "tag_pattern (str, optional):\n"
@@ -24,8 +26,10 @@ def test_config_help() -> None:
 
 def test_config_simple(tmp_path: Path) -> None:
     from h3a.config import (
+        DEFAULT_ON_CONFLICT,
         DEFAULT_TAG_FORMAT,
         DEFAULT_TAG_PATTERN,
+        DEFAULT_TAG_TIME_SOURCE,
         DEFAULT_THREADS,
         Config,
         load_config,
@@ -47,9 +51,10 @@ def test_config_simple(tmp_path: Path) -> None:
         include=["foo.txt"],
         exclude=[],
         out_dir="",
+        tag_time_source=DEFAULT_TAG_TIME_SOURCE,
         tag_format=DEFAULT_TAG_FORMAT,
         tag_pattern=DEFAULT_TAG_PATTERN,
-        on_conflict="error",
+        on_conflict=DEFAULT_ON_CONFLICT,
         threads=DEFAULT_THREADS,
     )
 
@@ -70,6 +75,7 @@ def test_config_complex(tmp_path: Path) -> None:
         "exclude:\n"
         "  - bar/baz.txt\n"
         "out_dir: archive\n"
+        "tag_time_source: ctime\n"
         "tag_format: _%Y%m%d\n"
         "tag_pattern: '_\\d{8}'\n"
         "on_conflict: skip\n"
@@ -85,6 +91,7 @@ def test_config_complex(tmp_path: Path) -> None:
         include=["foo.txt", "bar/*.py", "**/baz.txt"],
         exclude=["bar/baz.txt"],
         out_dir="archive",
+        tag_time_source="ctime",
         tag_format="_%Y%m%d",
         tag_pattern=r"_\d{8}",
         on_conflict="skip",

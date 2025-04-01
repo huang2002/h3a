@@ -3,10 +3,12 @@ from typing import Annotated, Final, Literal, NamedTuple, TypeAliasType, TypedDi
 
 import strictyaml as yaml
 
+type TagTimeSourceType = Literal["now", "mtime", "ctime"]
 type OnConflictType = Literal["error", "skip", "overwrite"]
 
 DEFAULT_TAG_FORMAT: Final = "_v%Y%m%d-%H%M%S"
 DEFAULT_TAG_PATTERN: Final = r"_v\d{8}-\d{6}"
+DEFAULT_TAG_TIME_SOURCE: Final[TagTimeSourceType] = "mtime"
 DEFAULT_ON_CONFLICT: Final[OnConflictType] = "error"
 DEFAULT_THREADS: Final = 8
 
@@ -36,6 +38,13 @@ class Config(TypedDict):
         ConfigItemMetaData(
             required=False,
             help="The output path prefix.",
+        ),
+    ]
+    tag_time_source: Annotated[
+        TagTimeSourceType,
+        ConfigItemMetaData(
+            required=False,
+            help=f"The source of the timestamp in the dest tag. (default: {DEFAULT_TAG_TIME_SOURCE!r})",
         ),
     ]
     tag_format: Annotated[
@@ -80,6 +89,9 @@ config_schema = yaml.Map(
             yaml.EmptyList(),
         ),
         yaml.Optional("out_dir", default=""): yaml.Str(),
+        yaml.Optional("tag_time_source", default=DEFAULT_TAG_TIME_SOURCE): yaml.Enum(
+            TagTimeSourceType.__value__.__args__
+        ),
         yaml.Optional("tag_format", default=DEFAULT_TAG_FORMAT): yaml.Str(),
         yaml.Optional("tag_pattern", default=DEFAULT_TAG_PATTERN): yaml.Str(),
         yaml.Optional("on_conflict", default=DEFAULT_ON_CONFLICT): yaml.Enum(
