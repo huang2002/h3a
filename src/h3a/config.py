@@ -1,7 +1,9 @@
 from inspect import get_annotations
-from typing import Annotated, Final, Literal, NamedTuple, TypedDict, cast
+from typing import Annotated, Final, Literal, NamedTuple, TypeAliasType, TypedDict, cast
 
 import strictyaml as yaml
+
+type OnConflictType = Literal["error", "skip", "overwrite"]
 
 DEFAULT_TAG_FORMAT: Final = "_v%Y%m%d-%H%M%S"
 DEFAULT_TAG_PATTERN: Final = r"_v\d{8}-\d{6}"
@@ -51,7 +53,7 @@ class Config(TypedDict):
         ),
     ]
     on_conflict: Annotated[
-        Literal["error", "skip", "overwrite"],
+        OnConflictType,
         ConfigItemMetaData(
             required=False,
             help=f"The action of existing dest files. (default: {DEFAULT_ON_CONFLICT!r})",
@@ -81,7 +83,7 @@ config_schema = yaml.Map(
         yaml.Optional("tag_format", default=DEFAULT_TAG_FORMAT): yaml.Str(),
         yaml.Optional("tag_pattern", default=DEFAULT_TAG_PATTERN): yaml.Str(),
         yaml.Optional("on_conflict", default=DEFAULT_ON_CONFLICT): yaml.Enum(
-            get_annotations(Config)["on_conflict"].__origin__.__args__
+            OnConflictType.__value__.__args__
         ),
         yaml.Optional("threads", default=DEFAULT_THREADS): yaml.Int(),
         yaml.Optional("_execute_delay_seconds", default=0.0): yaml.Float(),
@@ -104,19 +106,28 @@ def load_config(yaml_string: str, *, extras: ExtraConfig | None = None) -> Confi
 
 def format_config_help() -> str:
     help_text: str = ""
+
     for key, annotation in get_annotations(Config).items():
         assert hasattr(annotation, "__origin__")
         assert hasattr(annotation, "__metadata__")
         assert isinstance(annotation.__metadata__, tuple)
         assert len(annotation.__metadata__) == 1
+
         config_item_meta_data = annotation.__metadata__[0]
         assert isinstance(config_item_meta_data, ConfigItemMetaData)
+
+        annotation_type = annotation.__origin__
+        while isinstance(annotation_type, TypeAliasType):
+            annotation_type = annotation_type.__value__
+
         type_text: str = ""
-        if annotation.__origin__ in {str, int, float, bool}:
-            type_text += annotation.__origin__.__name__
+        if annotation_type in {str, int, float, bool}:
+            type_text += annotation_type.__name__
         else:
-            type_text += str(annotation.__origin__)
+            type_text += str(annotation_type)
         if not config_item_meta_data.required:
             type_text += ", optional"
+
         help_text += f"{key} ({type_text}):\n    {config_item_meta_data.help}\n"
+
     return help_text
