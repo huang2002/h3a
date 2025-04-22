@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0
+
+- Added consideration for empty plan situation.
+
 ## 0.2.0
 
 - Added a new config item: `tag_time_source`.
