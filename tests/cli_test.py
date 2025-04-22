@@ -150,7 +150,7 @@ def test_cli_complex(tmp_path: Path) -> None:
         "out_dir: archive\n"
         "tag_time_source: now\n"
         "tag_format: .backup\n"
-        "tag_pattern: .backup\n"
+        "tag_pattern: '\\.backup'\n"
         "on_conflict: overwrite\n"
         "threads: 2\n"
     )
@@ -175,7 +175,7 @@ def test_cli_complex(tmp_path: Path) -> None:
         out_dir="archive",
         tag_time_source="now",
         tag_format=".backup",
-        tag_pattern=".backup",
+        tag_pattern=r"\.backup",
         on_conflict="overwrite",
         threads=1,
     )
