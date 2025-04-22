@@ -129,6 +129,73 @@ def test_cli_simple(tmp_path: Path) -> None:
     assert plan[0].src.read_text() == plan[0].dest.read_text()
 
 
+def test_cli_empty(tmp_path: Path) -> None:
+    from h3a.cli import CliResult, main
+    from h3a.config import (
+        DEFAULT_TAG_TIME_SOURCE,
+        DEFAULT_THREADS,
+        Config,
+    )
+
+    # -- Initialize test files --
+    (tmp_path / "foo.txt").write_text("foo")
+    (tmp_path / "foo.backup.txt").write_text("foo.backup")
+    (tmp_path / "h3a.yaml").write_text(
+        "include:\n"
+        "  - foo.txt\n"
+        "tag_format: .backup\n"
+        "tag_pattern: '\\.backup'\n"
+        "on_conflict: skip\n"
+    )
+
+    # -- Execute cli --
+    cli_runner = CliRunner()
+    with chdir(tmp_path):
+        cli_result = cli_runner.invoke(main, ["-y"], standalone_mode=False)
+
+    # -- Assert cli result --
+    assert cli_result.exception is None, cli_result.output
+    assert cli_result.exit_code == 0, cli_result.output
+    cli_return_value: object = cli_result.return_value
+    assert isinstance(cli_return_value, CliResult)
+
+    # -- Assert config --
+    assert cli_return_value.config == Config(
+        include=["foo.txt"],
+        exclude=[],
+        out_dir="",
+        tag_time_source=DEFAULT_TAG_TIME_SOURCE,
+        tag_format=".backup",
+        tag_pattern=r"\.backup",
+        on_conflict="skip",
+        threads=DEFAULT_THREADS,
+    )
+
+    # -- Assert context --
+    context = cli_return_value.context
+    assert not context.verbose
+    assert not context.debug
+    assert context.threads == DEFAULT_THREADS
+
+    # -- Assert plan --
+    plan = cli_return_value.plan
+    assert len(plan) == 0
+
+    # -- Assert cli output --
+    assert cli_result.output == "An empty plan was generated. Nothing to do.\n"
+
+    # -- Assert execution --
+    assert set(
+        path.relative_to(tmp_path).as_posix() for path in tmp_path.glob("**/*.*")
+    ) == {
+        "foo.txt",
+        "foo.backup.txt",
+        "h3a.yaml",
+    }
+    assert (tmp_path / "foo.txt").read_text() == "foo"
+    assert (tmp_path / "foo.backup.txt").read_text() == "foo.backup"
+
+
 def test_cli_complex(tmp_path: Path) -> None:
     from h3a.cli import CliResult, main
     from h3a.config import Config

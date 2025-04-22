@@ -135,21 +135,21 @@ def main(
         _execute_delay_seconds=extra_config.get("_execute_delay_seconds", None),
     )
 
-    # -- Generate plan --
+    # -- Generate and execute plan --
     plan = generate_plan(
         config=config, root_dir=config_file_path.parent, context=context
     )
-    print("Generated plan:")
-    for plan_item in plan:
-        print(format_plan_item(plan_item))
+    if len(plan) == 0:
+        print("An empty plan was generated. Nothing to do.")
+    else:
+        print("Generated plan:")
+        for plan_item in plan:
+            print(format_plan_item(plan_item))
 
-    if not dry_run:
-        # -- Confirm plan --
-        if not skip_confirm:
-            click.confirm("Continue?", abort=True)
-
-        # -- Execute plan --
-        execute_plan(plan, context=context)
+        if not dry_run:
+            if not skip_confirm:
+                click.confirm("Continue?", abort=True)
+            execute_plan(plan, context=context)
 
     return CliResult(
         config=config,
